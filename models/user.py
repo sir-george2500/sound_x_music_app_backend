@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
 """
-Define the Model of the backend
+Define all the Model relating to user 
 """
 
 class RegisterUser(BaseModel):
