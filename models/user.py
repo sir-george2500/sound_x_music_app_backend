@@ -11,10 +11,11 @@ class RegisterUser(BaseModel):
     password: str = Field(..., description="Password of the user to register")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "examples": [
                 {
                     "username": "john_doe",
+                    "email":"gsmulbah2500@gmail.com",
                     "password": "secret123"
                 },
                 {
@@ -30,7 +31,7 @@ class LoginUser(BaseModel):
     password: str = Field(..., description="Password of the user to log in")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "examples": [
                 {
                     "username": "john_doe",
