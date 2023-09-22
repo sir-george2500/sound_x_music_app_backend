@@ -8,7 +8,7 @@ router = APIRouter()
 @router.get("/test_db_connection")
 def test_db_connection():
     try:
-        testconnection()
+        return testconnection() 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error connecting to database: {str(e)}")
 
