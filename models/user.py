@@ -27,18 +27,18 @@ class RegisterUser(BaseModel):
 
 
 class LoginUser(BaseModel):
-    username: str = Field(..., description="Username of the user to log in")
+    email: str = Field(..., description="email of the user to log in")
     password: str = Field(..., description="Password of the user to log in")
 
     class Config:
         json_schema_extra = {
             "examples": [
                 {
-                    "username": "john_doe",
+                    "email": "gsmulbah2500@gmail.com",
                     "password": "secret123"
                 },
                 {
-                    "username": "alice_smith",
+                    "email": "game2500@gmail.com",
                     "password": "password456"
                 }
             ]

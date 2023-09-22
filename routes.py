@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from config.db import client
-from models.user import RegisterUser
-from db_query.query import testconnection, create_user
+from models.user import RegisterUser ,LoginUser
+from db_query.query import testconnection, create_user , sign_user
 
 router = APIRouter()
 
@@ -20,3 +20,12 @@ def register_user(user: RegisterUser):
         return {"user_id": user_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error registering user: {str(e)}")
+    
+@router.post("/login_user")
+def login_user(user:LoginUser):
+    try:
+        # Create the user in the database
+        user_id = sign_user(user)
+        return {"user_id": user_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
