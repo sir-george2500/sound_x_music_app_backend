@@ -33,11 +33,12 @@ def create_user(user_data):
 
     # Hash the password before storing it
     hashed_password = bcrypt.hash(user_data.password)
-    user_data.password = hashed_password  # Update the user_data object with the hashed password
+    user_data.password = hashed_password  
 
     # go ahead and create the user
     user_id = users_collection.insert_one(user_data.dict()).inserted_id
     return {"user_id": str(user_id)}
+
 
 
 
