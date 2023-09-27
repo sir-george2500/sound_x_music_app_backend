@@ -46,3 +46,22 @@ class LoginUser(BaseModel):
                 }
             ]
         }
+
+class LoginGoogleUser(BaseModel):
+    username:str = Field(..., description="username  of the google user to log in")
+    email: str = Field(..., description="email of the google user to  log in")
+    profile_image: str = Field(..., description="profile image of that google user")
+    sub: str = Field(...,description="sub for google user")
+
+    class Config:
+        json_schema_extra = {
+            "examples": [
+                {
+                    "username": 'coder-x',
+                    "email": 'codebeta2500@gmail.com',
+                    "profile_image": 'https://lh3.googleusercontent.com/a/ACg8ocJYUbgeMobRRlOwkw7rOCiFwUVNS4OcPz__TzjakLoD=s96-c',
+                    "sub": '113442546591326061804',
+
+                },
+            ]
+        }

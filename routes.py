@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from config.db import client
-from models.user import RegisterUser ,LoginUser
-from db_query.query import testconnection, create_user , sign_user
+from models.user import RegisterUser ,LoginUser,LoginGoogleUser
+from db_query.query import testconnection, create_user , sign_user, sign_user_with_google
 
 router = APIRouter()
 
@@ -25,7 +25,17 @@ def register_user(user: RegisterUser):
 def login_user(user:LoginUser):
     try:
         # Create the user in the database
-        user_id = sign_user(user)
-        return {"user_id": user_id}
+        jwt = sign_user(user)
+        return {"jwt": jwt}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
+    
+@router.post("/login_with_google")
+def login_with_google(user:LoginGoogleUser):
+    try:
+        # Create the user in the database
+        jwt= sign_user_with_google(user)
+        return {"jwt": jwt}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
+    

@@ -65,3 +65,40 @@ def sign_user(user_data):
     else:
         return {"error": "Invalid username/email or password"}
 
+# sign in google user by generating jwt token for them     
+def sign_user_with_google(user_data):
+    db = client["sound-x"]
+    users_collection = db["third_party_users"]
+
+    # Check if the user exists in the DB
+    existing_user = users_collection.find_one({'$or': [{'email': user_data.email}, {'sub': user_data.sub}]})
+
+    if existing_user:
+        # Generate a JWT token
+        payload = {
+            'user_id': str(existing_user['_id']),
+            'exp': datetime.utcnow() + timedelta(hours=1) 
+        }  
+        jwt_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  
+
+        return {'jwt_token': jwt_token}
+    else:
+        # User not found, store their credentials and generate a JWT token
+        user_doc = {
+            'username': user_data.username,
+            'email': user_data.email,
+            'profile_image': user_data.profile_image,
+            'sub': user_data.sub
+        }
+        result = users_collection.insert_one(user_doc)
+        user_id = str(result.inserted_id)
+
+        payload = {
+            'user_id': user_id,
+            'exp': datetime.utcnow() + timedelta(hours=1) 
+        }  
+        jwt_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  
+
+        return {'jwt_token': jwt_token}
+    
+
