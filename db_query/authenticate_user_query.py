@@ -6,11 +6,7 @@ import os
 import jwt
 
 # Load environment variables from .env
-load_dotenv()
-
- 
-
-
+load_dotenv() 
 #gobal variable 
 SECRET_KEY = os.getenv("Secret_Key")  
 ALGORITHM = "HS256"
@@ -39,12 +35,7 @@ def create_user(user_data):
     user_id = users_collection.insert_one(user_data.dict()).inserted_id
     return {"user_id": str(user_id)}
 
-
-
-
-
 # ... (previous code remains the same) ...
-
 def sign_user(user_data):
     db = client["sound-x"]
     users_collection = db["users"]
@@ -101,4 +92,3 @@ def sign_user_with_google(user_data):
 
         return {'jwt_token': jwt_token}
     
-
