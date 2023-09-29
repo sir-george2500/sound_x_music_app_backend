@@ -4,7 +4,7 @@ from config.db import client
 from models.user import RegisterUser ,LoginUser,LoginGoogleUser
 from models.song import SongUploadForm
 from db_query.authenticate_user_query import testconnection, create_user , sign_user, sign_user_with_google ,get_user_data
-from db_query.audio_query import read_audio_metadata,save_song_data
+from db_query.audio_query import read_audio_metadata,save_song_data,save_song_metadata
 import json
 
 router = APIRouter()
@@ -62,6 +62,16 @@ async def upload_song(data:SongUploadForm):
 @router.post("/upload_song")
 async def read_file_route(file: UploadFile):
     """Read an audio file from the client's computer."""
-    content = await read_audio_metadata(file.song_file)
-    return content  
+    try:
+        content = await read_audio_metadata(file)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading song data: {str(e)}")
+
+    try:
+        result = await save_song_metadata(content)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving song data: {str(e)}")
+   
+
 

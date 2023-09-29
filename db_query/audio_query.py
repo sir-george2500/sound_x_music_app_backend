@@ -48,6 +48,21 @@ async def save_song_data(data):
     song_id = song_collection.insert_one(data.dict()).inserted_id
     return {"song_id": str(song_id)}
 
+#save song metadata 
+async def save_song_metadata(data):
+    db = client["sound-x"]
+    song_collection = db["songs_metadata"]
+
+    # Check if a song with the same file name in it metadata already exists
+    if song_collection.find_one({'file_name': data["file_name"]}):
+        return {"Error":"Song with the same title already exists"}
+
+    # If not, insert the new song metadata
+    songmd_id = song_collection.insert_one(data).inserted_id
+    return {"song_metadata_id": str(songmd_id)}
+
+    
+
 
 
   
