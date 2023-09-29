@@ -2,9 +2,9 @@ import librosa
 from fastapi import APIRouter, HTTPException,UploadFile
 from config.db import client
 from models.user import RegisterUser ,LoginUser,LoginGoogleUser
-from models.song import SongUpload
+from models.song import SongUploadForm
 from db_query.authenticate_user_query import testconnection, create_user , sign_user, sign_user_with_google ,get_user_data
-from db_query.audio_query import read_audio_metadata
+from db_query.audio_query import read_audio_metadata,save_song_data
 import json
 
 router = APIRouter()
@@ -49,6 +49,15 @@ async def get_user(email: str):
     if user_data is None:
         raise HTTPException(status_code=404, detail="User not found")
     return user_data
+
+
+@router.post("/upload_song_data")
+async def upload_song(data:SongUploadForm):
+    try:
+       saveSong= await save_song_data(data)
+       return saveSong
+    except Exception as e:
+         raise HTTPException(status_code=500, detail=f"Error uploading song:{str(e)}")
 
 @router.post("/upload_song")
 async def read_file_route(file: UploadFile):

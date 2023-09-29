@@ -1,5 +1,7 @@
 import io
 import librosa
+from config.db import client
+
 from fastapi import UploadFile
 
 async def read_audio_metadata(file: UploadFile):
@@ -31,3 +33,24 @@ async def read_audio_metadata(file: UploadFile):
         "duration": duration
 
     }
+
+
+#save song data 
+async def save_song_data(data):
+    db = client["sound-x"]
+    song_collection = db["songs_information"]
+
+    # Check if a song with the same title already exists
+    if song_collection.find_one({'title': data.title}):
+        return {"Error":"Song with the same title already exists"}
+
+    # If not, insert the new song data
+    song_id = song_collection.insert_one(data.dict()).inserted_id
+    return {"song_id": str(song_id)}
+
+
+
+  
+
+
+
