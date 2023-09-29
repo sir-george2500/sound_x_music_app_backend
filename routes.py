@@ -2,7 +2,8 @@ import librosa
 from fastapi import APIRouter, HTTPException,UploadFile
 from config.db import client
 from models.user import RegisterUser ,LoginUser,LoginGoogleUser
-from db_query.authenticate_user_query import testconnection, create_user , sign_user, sign_user_with_google
+from models.song import SongUpload
+from db_query.authenticate_user_query import testconnection, create_user , sign_user, sign_user_with_google ,get_user_data
 from db_query.audio_query import read_audio_metadata
 import json
 
@@ -41,12 +42,17 @@ def login_with_google(user:LoginGoogleUser):
         return {"jwt": jwt}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
-    
-@router.post("/read-file/")
+
+@router.get("/get_user_data/{email}")
+async def get_user(email: str):
+    user_data = await get_user_data(email)
+    if user_data is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_data
+
+@router.post("/upload_song")
 async def read_file_route(file: UploadFile):
     """Read an audio file from the client's computer."""
-
-    content = await read_audio_metadata(file)
-    
+    content = await read_audio_metadata(file.song_file)
     return content  
 

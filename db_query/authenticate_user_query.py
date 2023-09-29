@@ -91,4 +91,20 @@ def sign_user_with_google(user_data):
         jwt_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  
 
         return {'jwt_token': jwt_token}
+
+async def get_user_data(email):
+    db = client["sound-x"]
+
+    # First, check in the 'users' collection
+    users_collection = db["users"]
+    user_data = users_collection.find_one({'email': email}, {"_id": 0, "password": 0})  # Exclude _id and password fields
+
+    if user_data:
+        return user_data
+
+    # If not found in 'users', check in 'third_party_users'
+    third_party_users_collection = db["third_party_users"]
+    third_party_user_data = third_party_users_collection.find_one({'email': email}, {"_id": 0})
+
+    return third_party_user_data
     
