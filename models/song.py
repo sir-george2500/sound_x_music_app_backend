@@ -22,3 +22,7 @@ class SongUploadForm(BaseModel):
                 },
             ]
         }
+
+class AddSongIdMetatdataId(BaseModel):
+      songm_id:str
+      song_id:str

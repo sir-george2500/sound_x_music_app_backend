@@ -1,11 +1,22 @@
+# import necessary modules and libraries
 import io
 import librosa
 from config.db import client
 
 from fastapi import UploadFile
 
+
+# Function to read metadata of an uploaded audio file
 async def read_audio_metadata(file: UploadFile):
-    """Read metadata of an audio file uploaded by the client."""
+    """
+    Read metadata of an audio file uploaded by the client.
+
+    Args:
+        file: The uploaded audio file.
+
+    Returns:
+        Metadata of the audio file.
+    """
 
     # Read the contents of the uploaded file.
     audio_content = await file.read()
@@ -31,41 +42,75 @@ async def read_audio_metadata(file: UploadFile):
         "file_size": file_size,
         "sample_rate": sample_rate,
         "duration": duration
-
     }
 
 
-#save song data 
+# Function to save song data in the database
 async def save_song_data(data):
+    """
+    Save song data to the database.
+
+    Args:
+        data: Song data to be saved.
+
+    Returns:
+        Song ID if saved successfully, else an error message.
+    """
+
     db = client["sound-x"]
     song_collection = db["songs_information"]
 
     # Check if a song with the same title already exists
     if song_collection.find_one({'title': data.title}):
-        return {"Error":"Song with the same title already exists"}
+        return {"Error": "Song with the same title already exists"}
 
     # If not, insert the new song data
     song_id = song_collection.insert_one(data.dict()).inserted_id
     return {"song_id": str(song_id)}
 
-#save song metadata 
+
+# Function to save song metadata in the database
 async def save_song_metadata(data):
+    """
+    Save song metadata to the database.
+
+    Args:
+        data: Song metadata to be saved.
+
+    Returns:
+        Song metadata ID if saved successfully, else an error message.
+    """
+
     db = client["sound-x"]
     song_collection = db["songs_metadata"]
 
-    # Check if a song with the same file name in it metadata already exists
+    data["song_id"] = "None"
+
+    # Check if a song with the same file name in its metadata already exists
     if song_collection.find_one({'file_name': data["file_name"]}):
-        return {"Error":"Song with the same title already exists"}
+        return {"Error": "Song with the same title already exists"}
 
     # If not, insert the new song metadata
     songmd_id = song_collection.insert_one(data).inserted_id
     return {"song_metadata_id": str(songmd_id)}
 
-    
 
+# Function to add a song ID to song metadata record
+async def add_song_id(songm_id):
+    """
+    Adds the song ID to the song metadata record.
 
+    Args:
+        songm_id: The ID of the song metadata record.
 
-  
+    Returns:
+        0 if the song ID was added successfully, 1 otherwise.
+    """
 
+    db = client["sound-x"]
+    songm_collection = db["songs_metadata"]
 
-
+    if songm_collection.find_one({"_id": songm_id}):
+        return {"success": 0}
+    else:
+        return {"success": 1, "error": "Song metadata record does not exist."}

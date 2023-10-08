@@ -64,3 +64,4 @@ class LoginGoogleUser(BaseModel):
                 },
             ]
         }
+
