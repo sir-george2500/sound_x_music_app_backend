@@ -2,8 +2,29 @@
 import io
 import librosa
 from config.db import client
+import boto3
+from dotenv import load_dotenv
+import os
 
 from fastapi import UploadFile
+
+
+# Load environment variables
+load_dotenv()
+
+
+
+# Access environment variables
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+
+# using these credential
+s3 = boto3.client(
+    's3',
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+)
 
 
 # Function to read metadata of an uploaded audio file
@@ -91,8 +112,32 @@ async def save_song_metadata(data):
         return {"Error": "Song with the same title already exists"}
 
     # If not, insert the new song metadata
-    songmd_id = song_collection.insert_one(data).inserted_id
-    return {"song_metadata_id": str(songmd_id)}
+    song_collection.insert_one(data).inserted_id
+
+async def upload_audio_to_s3(file: UploadFile):
+
+    """
+    Adds the song file to amazon s3 bucket.
+
+    Args:
+        file: the file to be uploaded.
+
+    Returns:
+        File uploaded successfully
+    """
+    # Read the contents of the uploaded file.
+    audio_content = await file.read()
+
+    # Extract file name from the UploadFile object.
+    file_name = file.filename
+
+    # Upload the file to S3
+    s3.upload_fileobj(io.BytesIO(audio_content), S3_BUCKET_NAME, file_name)
+
+    # Generate a pre-signed URL for the uploaded file
+    url = s3.generate_presigned_url('get_object', Params={'Bucket': S3_BUCKET_NAME, 'Key': file_name})
+    return {"message": "File uploaded successfully", "url": url}
+    
 
 
 # Function to add a song ID to song metadata record
@@ -115,3 +160,5 @@ async def add_song_id(songm_id,song_id):
         return {"success": 0}
     else:
         return {"success": 1, "error": "Song metadata record does not exist."}
+
+
