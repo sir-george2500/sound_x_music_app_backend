@@ -11,7 +11,7 @@ from db_query.audio_query import (
     read_audio_metadata, save_song_data, save_song_metadata, add_song_id
 )
 from models.user import RegisterUser, LoginUser, LoginGoogleUser
-from models.song import SongUploadForm
+from models.song import SongUploadForm, AddSongIdMetatdataId
 
 
 # Create an instance of APIRouter
@@ -93,19 +93,22 @@ async def read_file_route(file: UploadFile):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error saving song data: {str(e)}")
-
+    
+  
+    
 
 # Endpoint to add a song ID to song metadata record
 @router.post("/add_song_id")
-async def add_song_id_endpoint(songm_id: str):
+async def add_song_id_endpoint(data:AddSongIdMetatdataId):
    
     try:
-        songm_id_bson = ObjectId(songm_id)
+        songm_id_bson = ObjectId(data.songm_id)
+        song_id = data.song_id
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid songm_id format")
 
     try:
-        success = await add_song_id(songm_id_bson)
+        success = await add_song_id(songm_id_bson,song_id)
         return success
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error adding song ID: {str(e)}")

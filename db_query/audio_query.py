@@ -96,7 +96,7 @@ async def save_song_metadata(data):
 
 
 # Function to add a song ID to song metadata record
-async def add_song_id(songm_id):
+async def add_song_id(songm_id,song_id):
     """
     Adds the song ID to the song metadata record.
 
@@ -111,6 +111,7 @@ async def add_song_id(songm_id):
     songm_collection = db["songs_metadata"]
 
     if songm_collection.find_one({"_id": songm_id}):
+        songm_collection.update_one({"_id": songm_id}, {"$set": {"song_id": song_id}})
         return {"success": 0}
     else:
         return {"success": 1, "error": "Song metadata record does not exist."}
