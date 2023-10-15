@@ -6,9 +6,8 @@ from dotenv  import load_dotenv
 import os
 import jwt
 from datetime import datetime, timedelta
-from fastapi import HTTPException
-
 import uuid
+
 
 # Load environment variables from .env
 load_dotenv()
@@ -154,19 +153,11 @@ def generate_reset_token():
     timestamp = datetime.now().timestamp()
     return f"{reset_token}-{timestamp}"
 
+# check in the database for a user 
+def check_in_db(email):
+    users_collection = db["users"]
 
-# user reset_token 
-def request_reset_token(email):
-    users = db['users']
-    if email not in users:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Generate reset token
-    reset_token = generate_reset_token()
-
-    # Store token in database
-    users[email]["reset_token"] = reset_token
-    users[email]["token_expiry"] = datetime.now() + timedelta(hours=1)  # Set expiry time to 1 hour from now
+    user_in_db = users_collection.find_one({'email': email})
+    return user_in_db
 
 
-    return {"message": "Reset token sent successfully"}

@@ -1,22 +1,21 @@
 # Imports should be organized in separate lines and grouped by their origin (standard library, third-party, local).
 from bson import ObjectId
-
-from fastapi import APIRouter, HTTPException, UploadFile
-
 from config.db import client
+from fastapi import APIRouter, HTTPException, UploadFile
 from db_query.authenticate_user_query import (
-    test_connection, create_user, sign_user, sign_user_with_google, get_user_data
+    test_connection, create_user, sign_user, sign_user_with_google, get_user_data,check_in_db
 )
 from db_query.audio_query import (
     read_audio_metadata, save_song_data, save_song_metadata, add_song_id, upload_audio_to_s3
 )
-from models.user import RegisterUser, LoginUser, LoginGoogleUser
+from models.user import RegisterUser, LoginUser, LoginGoogleUser, ResetTokenRequest
 from models.song import SongUploadForm, AddSongIdMetatdataId
 
 
 # Create an instance of APIRouter
 router = APIRouter()
 
+db = client["sound-x"]
 
 # Endpoint to test the database connection
 @router.get("/test_db_connection")
@@ -105,8 +104,7 @@ async def read_file_route(file: UploadFile):
 
 # Endpoint to add a song ID to song metadata record
 @router.post("/add_song_id")
-async def add_song_id_endpoint(data:AddSongIdMetatdataId):
-   
+async def add_song_id_endpoint(data:AddSongIdMetatdataId):   
     try:
         songm_id_bson = ObjectId(data.songm_id)
         song_id = data.song_id
@@ -118,3 +116,19 @@ async def add_song_id_endpoint(data:AddSongIdMetatdataId):
         return success
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error adding song ID: {str(e)}")
+
+
+
+
+@router.post("/request_reset_token")
+async def request_reset_token(user: ResetTokenRequest):
+    email = user.email
+    
+    #check if the user is in the database
+    user_in_db = check_in_db(email)
+
+    if not user_in_db:
+        raise HTTPException(status_code=404, detail=f"User not found")
+
+    return {"message": f"Successfully added the field to the db"}
+

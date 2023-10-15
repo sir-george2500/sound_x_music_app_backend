@@ -67,13 +67,15 @@ class LoginGoogleUser(BaseModel):
         }
 
 class ResetTokenRequest(BaseModel):
-    email: str
+    email: str = Field(...,description="user email")
+
 
     class Config:
         json_schema_extra = {
             "examples": [
-                {                
-                    "email": 'codebeta2500@gmail.com',
-                },
+               {
+                "email": "test@example.com"
+                }
+
             ]
         }
