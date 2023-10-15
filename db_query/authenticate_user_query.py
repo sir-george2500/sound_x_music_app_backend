@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from dotenv  import load_dotenv
 import os
 import jwt
+from datetime import datetime, timedelta
+import uuid
 
 # Load environment variables from .env
 load_dotenv()
@@ -126,6 +128,8 @@ def sign_user_with_google(user_data):
         jwt_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  
 
         return {'jwt_token': jwt_token}
+    
+
 
 # Get user data by email from both 'users' and 'third_party_users' collections
 async def get_user_data(email):
@@ -143,3 +147,9 @@ async def get_user_data(email):
     third_party_user_data = third_party_users_collection.find_one({'email': email}, {"_id": 0})
 
     return third_party_user_data
+
+# generate the reset Token for the user request
+def generate_reset_token():
+    reset_token = str(uuid.uuid4())
+    timestamp = datetime.now().timestamp()
+    return f"{reset_token}-{timestamp}"

@@ -9,6 +9,7 @@ class RegisterUser(BaseModel):
     email: str = Field(..., description="email of the user to register")
     password: str = Field(..., description="Password of the user to register")
     profile_image: str = Field(..., description="Password of the user to register")
+    reset_token: str = Field(..., description="Reset Token")
 
 
     class Config:
@@ -18,7 +19,9 @@ class RegisterUser(BaseModel):
                     "username": "john_doe",
                     "email":"gsmulbah2500@gmail.com",
                     "password": "secret123",
-                    "profile_image":"None"
+                    "profile_image":"None",
+                    "reset_token" : "None",
+                    "token_expiry":"None"
                 },
                 {
                     "username": "alice_smith",
@@ -65,3 +68,14 @@ class LoginGoogleUser(BaseModel):
             ]
         }
 
+class ResetTokenRequest(BaseModel):
+    email: str
+
+    class Config:
+        json_schema_extra = {
+            "examples": [
+                {                
+                    "email": 'codebeta2500@gmail.com',
+                },
+            ]
+        }
