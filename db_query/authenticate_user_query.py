@@ -6,6 +6,8 @@ from dotenv  import load_dotenv
 import os
 import jwt
 from datetime import datetime, timedelta
+from fastapi import HTTPException
+
 import uuid
 
 # Load environment variables from .env
@@ -15,6 +17,9 @@ load_dotenv()
 SECRET_KEY = os.getenv("Secret_Key")  
 ALGORITHM = "HS256"
 
+#db client
+db = client["sound-x"]
+
 # Test if the database is connected
 def test_connection():
     """
@@ -23,7 +28,6 @@ def test_connection():
     Returns:
         A message indicating successful database connection.
     """
-    db = client["sound-x"]
     collection = db["users"]
     document = collection.find_one()
     return {"message": "Database connection successful!"}
@@ -39,7 +43,6 @@ def create_user(user_data):
     Returns:
         A dictionary containing either the user_id or an error message.
     """
-    db = client["sound-x"]
     users_collection = db["users"]
 
     # check if the user exists in the DB
@@ -65,7 +68,6 @@ def sign_user(user_data):
     Returns:
         A dictionary containing a JWT token or an error message.
     """
-    db = client["sound-x"]
     users_collection = db["users"]
 
     # Find the user by username or email
@@ -95,7 +97,6 @@ def sign_user_with_google(user_data):
     Returns:
         A dictionary containing a JWT token or an error message.
     """
-    db = client["sound-x"]
     users_collection = db["third_party_users"]
 
     # Check if the user exists in the DB
@@ -133,7 +134,6 @@ def sign_user_with_google(user_data):
 
 # Get user data by email from both 'users' and 'third_party_users' collections
 async def get_user_data(email):
-    db = client["sound-x"]
 
     # First, check in the 'users' collection
     users_collection = db["users"]
@@ -153,3 +153,20 @@ def generate_reset_token():
     reset_token = str(uuid.uuid4())
     timestamp = datetime.now().timestamp()
     return f"{reset_token}-{timestamp}"
+
+
+# user reset_token 
+def request_reset_token(email):
+    users = db['users']
+    if email not in users:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Generate reset token
+    reset_token = generate_reset_token()
+
+    # Store token in database
+    users[email]["reset_token"] = reset_token
+    users[email]["token_expiry"] = datetime.now() + timedelta(hours=1)  # Set expiry time to 1 hour from now
+
+
+    return {"message": "Reset token sent successfully"}

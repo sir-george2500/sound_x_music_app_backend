@@ -25,10 +25,6 @@ class RegisterUser(BaseModel):
                     "reset_token" : "None",
                     "token_expiry":"None"
                 },
-                {
-                    "username": "alice_smith",
-                    "password": "password456"
-                }
             ]
         }
 
