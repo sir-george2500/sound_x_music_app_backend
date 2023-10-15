@@ -10,6 +10,8 @@ class RegisterUser(BaseModel):
     password: str = Field(..., description="Password of the user to register")
     profile_image: str = Field(..., description="Password of the user to register")
     reset_token: str = Field(..., description="Reset Token")
+    token_expiry: str = Field(..., description="Token expiry")
+
 
 
     class Config:
