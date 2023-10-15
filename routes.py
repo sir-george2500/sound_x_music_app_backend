@@ -125,10 +125,9 @@ async def request_reset_token(user: ResetTokenRequest):
     email = user.email
     
     #check if the user is in the database
-    user_in_db = check_in_db(email)
+    user_in_db = check_in_db('users', email=email)
 
     if not user_in_db:
         raise HTTPException(status_code=404, detail=f"User not found")
-
     return {"message": f"Successfully added the field to the db"}
 

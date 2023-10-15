@@ -19,6 +19,31 @@ ALGORITHM = "HS256"
 #db client
 db = client["sound-x"]
 
+# variadic  function for checking in the Database for user
+def check_in_db(collection, delimiter=0, **kwargs):
+    """
+    Check if a user exists in the database.
+
+    Args:
+        collection (str): Name of the collection to search in.
+        delimiter (int): A value to determine the search type.
+        **kwargs: Keyword arguments representing field names and their corresponding values for the search.
+
+    Returns:
+        The user document if found, otherwise None.
+    """
+    users_collection = db[collection]
+
+    if delimiter > 0:
+        query = {'email': kwargs.get('email')}
+    else:
+        or_conditions = [{field: value} for field, value in kwargs.items()]
+        query = {'$or': or_conditions}
+
+    user_in_db = users_collection.find_one(query)
+    return user_in_db
+
+
 # Test if the database is connected
 def test_connection():
     """
@@ -45,7 +70,7 @@ def create_user(user_data):
     users_collection = db["users"]
 
     # check if the user exists in the DB
-    if users_collection.find_one({'$or': [{'email': user_data.username}, {'email': user_data.email}]}):
+    if users_collection.find_one({'$or': [{'name': user_data.username}, {'email': user_data.email}]}):
         return {"error": "Username or email already exists"}
 
     # Hash the password before storing it
@@ -153,11 +178,6 @@ def generate_reset_token():
     timestamp = datetime.now().timestamp()
     return f"{reset_token}-{timestamp}"
 
-# check in the database for a user 
-def check_in_db(email):
-    users_collection = db["users"]
 
-    user_in_db = users_collection.find_one({'email': email})
-    return user_in_db
 
 
