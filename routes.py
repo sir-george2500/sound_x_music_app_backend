@@ -29,6 +29,11 @@ def test_db_connection():
 # Endpoint to register a new user
 @router.post("/register_user")
 def register_user(user: RegisterUser):
+    # Check if the user already exists in the DB
+    user_in_db = check_in_db('users', username=user.username, email=user.email)
+    if user_in_db:
+        raise HTTPException(status_code=400, detail="Username or email already exists")
+
     try:
         # Create the user in the database
         user_id = create_user(user)

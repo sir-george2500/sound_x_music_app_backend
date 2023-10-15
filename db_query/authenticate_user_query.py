@@ -69,10 +69,6 @@ def create_user(user_data):
     """
     users_collection = db["users"]
 
-    # check if the user exists in the DB
-    if users_collection.find_one({'$or': [{'name': user_data.username}, {'email': user_data.email}]}):
-        return {"error": "Username or email already exists"}
-
     # Hash the password before storing it
     hashed_password = bcrypt.hash(user_data.password)
     user_data.password = hashed_password  
