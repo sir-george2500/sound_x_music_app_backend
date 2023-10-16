@@ -6,7 +6,7 @@ from db_query.authenticate_user_query import (
     test_connection, create_user, sign_user, sign_user_with_google, get_user_data, check_in_db, is_valid_user
 )
 from db_query.audio_query import (
-    read_audio_metadata, save_song_data, save_song_metadata, add_song_id, upload_audio_to_s3
+    read_audio_metadata, save_song_data, save_song_metadata, add_song_id, upload_audio_to_s3, check_in_db_song
 )
 from models.user import RegisterUser, LoginUser, LoginGoogleUser, ResetTokenRequest
 from models.song import SongUploadForm, AddSongIdMetatdataId
@@ -79,6 +79,10 @@ async def get_user(email: str):
 # Endpoint to upload song data
 @router.post("/upload_song_data")
 async def upload_song(data: SongUploadForm):
+
+    if check_in_db_song('songs_information',title = data.title ):
+        raise HTTPException(status_code=400, detail="Song data already exist")
+
     try:
         saveSong = await save_song_data(data)
         return saveSong
@@ -95,6 +99,7 @@ async def read_file_route(file: UploadFile):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading song data: {str(e)}")
 
+    
     try:
         await save_song_metadata(content)
         

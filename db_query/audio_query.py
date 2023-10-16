@@ -26,6 +26,34 @@ s3 = boto3.client(
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY
 )
 
+# Global Variable 
+db = client["sound-x"]
+
+
+# variadic  function for checking in the Database for song info
+def check_in_db_song(collection, delimiter=0, **kwargs):
+    """
+    Check if a user exists in the database.
+
+    Args:
+        collection (str): Name of the collection to search in.
+        delimiter (int): A value to determine the search type.
+        **kwargs: Keyword arguments representing field names and their corresponding values for the search.
+
+    Returns:
+        The user document if found, otherwise None.
+    """
+    song_collection = db[collection]
+  
+    if delimiter > 0:
+        query = {'title': kwargs.get('title')}
+    else:
+        or_conditions = [{field: value} for field, value in kwargs.items()]
+        query = {'$or': or_conditions}
+
+    song_in_db = song_collection.find_one(query)
+    return song_in_db
+
 
 # Function to read metadata of an uploaded audio file
 async def read_audio_metadata(file: UploadFile):
@@ -78,13 +106,7 @@ async def save_song_data(data):
         Song ID if saved successfully, else an error message.
     """
 
-    db = client["sound-x"]
     song_collection = db["songs_information"]
-
-    # Check if a song with the same title already exists
-    if song_collection.find_one({'title': data.title}):
-        return {"Error": "Song with the same title already exists"}
-
     # If not, insert the new song data
     song_id = song_collection.insert_one(data.dict()).inserted_id
     return {"song_id": str(song_id)}
@@ -102,7 +124,6 @@ async def save_song_metadata(data):
         Song metadata ID if saved successfully, else an error message.
     """
 
-    db = client["sound-x"]
     song_collection = db["songs_metadata"]
 
     data["song_id"] = "None"
