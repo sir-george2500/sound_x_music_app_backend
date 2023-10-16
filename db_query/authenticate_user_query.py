@@ -44,6 +44,7 @@ def check_in_db(collection, delimiter=0, **kwargs):
     return user_in_db
 
 
+
 # Test if the database is connected
 def test_connection():
     """
@@ -69,11 +70,9 @@ def create_user(user_data):
     """
     users_collection = db["users"]
 
-    # Hash the password before storing it
     hashed_password = bcrypt.hash(user_data.password)
     user_data.password = hashed_password  
 
-    # go ahead and create the user
     user_id = users_collection.insert_one(user_data.dict()).inserted_id
     return {"user_id": str(user_id)}
 
@@ -90,21 +89,38 @@ def sign_user(user_data):
     """
     users_collection = db["users"]
 
-    # Find the user by username or email
     user = users_collection.find_one({'email': user_data.email})
 
+    payload = {
+        'user_id': str(user['_id']),
+        'exp': datetime.utcnow() + timedelta(hours=1) 
+    }
+
+    jwt_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  
+
+    return {'jwt_token': jwt_token}
+
+def is_valid_user(user_data):
+    """
+    Check if a user is valid based on provided user data.
+
+    Args:
+        user_data (dict): Dictionary containing user data including email and password.
+
+    Returns:
+        bool: True if the user is valid, False otherwise.
+    """
+    users_collection = db["users"]
+
+    # Find the user by email
+    user = users_collection.find_one({'email': user_data.email})
+
+    # Check if user exists and password is valid
     if user and bcrypt.verify(user_data.password, user['password']):
-        # Generate a JWT token
-        payload = {
-            'user_id': str(user['_id']),
-            'exp': datetime.utcnow() + timedelta(hours=1) 
-        }
+        return True
 
-        jwt_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)  
+    return False
 
-        return {'jwt_token': jwt_token}
-    else:
-        return {"error": "Invalid username/email or password"}
 
 # Sign in a user with Google credentials and generate a JWT token
 def sign_user_with_google(user_data):
@@ -119,11 +135,9 @@ def sign_user_with_google(user_data):
     """
     users_collection = db["third_party_users"]
 
-    # Check if the user exists in the DB
     existing_user = users_collection.find_one({'$or': [{'email': user_data.email}, {'sub': user_data.sub}]})
 
     if existing_user:
-        # Generate a JWT token
         payload = {
             'user_id': str(existing_user['_id']),
             'exp': datetime.utcnow() + timedelta(hours=1) 
@@ -155,7 +169,6 @@ def sign_user_with_google(user_data):
 # Get user data by email from both 'users' and 'third_party_users' collections
 async def get_user_data(email):
 
-    # First, check in the 'users' collection
     users_collection = db["users"]
     user_data = users_collection.find_one({'email': email}, {"_id": 0, "password": 0})  # Exclude _id and password fields
 

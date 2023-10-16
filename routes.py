@@ -3,7 +3,7 @@ from bson import ObjectId
 from config.db import client
 from fastapi import APIRouter, HTTPException, UploadFile
 from db_query.authenticate_user_query import (
-    test_connection, create_user, sign_user, sign_user_with_google, get_user_data,check_in_db
+    test_connection, create_user, sign_user, sign_user_with_google, get_user_data, check_in_db, is_valid_user
 )
 from db_query.audio_query import (
     read_audio_metadata, save_song_data, save_song_metadata, add_song_id, upload_audio_to_s3
@@ -45,6 +45,9 @@ def register_user(user: RegisterUser):
 # Endpoint to log in a user
 @router.post("/login_user")
 def login_user(user: LoginUser):
+
+    if not is_valid_user(user):
+        raise HTTPException(status_code= 401, detail="Invalid password or Username")
     try:
         # Create the user in the database
         jwt = sign_user(user)
