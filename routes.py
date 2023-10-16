@@ -99,7 +99,9 @@ async def read_file_route(file: UploadFile):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading song data: {str(e)}")
 
-    
+    if check_in_db_song('songs_metadata',file_name = content["file_name"]):
+        raise HTTPException(status_code=400, detail="Song meta data already exist")
+
     try:
         await save_song_metadata(content)
         
@@ -132,7 +134,6 @@ async def add_song_id_endpoint(data:AddSongIdMetatdataId):
 
 
 
-
 @router.post("/request_reset_token")
 async def request_reset_token(user: ResetTokenRequest):
     email = user.email
@@ -141,6 +142,6 @@ async def request_reset_token(user: ResetTokenRequest):
     user_in_db = check_in_db('users', email=email)
 
     if not user_in_db:
-        raise HTTPException(status_code=404, detail=f"User not found")
-    return {"message": f"Successfully added the field to the db"}
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "Successfully added the field to the db"}
 
