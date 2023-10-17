@@ -182,11 +182,17 @@ async def get_user_data(email):
     return third_party_user_data
 
 # generate the reset Token for the user request
-def generate_reset_token():
+async def generate_reset_token():
     reset_token = str(uuid.uuid4())
     timestamp = datetime.now().timestamp()
     return f"{reset_token}-{timestamp}"
 
 
+async def update_request_token(email):
+    token = await generate_reset_token()
 
+    user_collection = db["users"]
 
+    user_collection.update_one({"email":email},{"$set":{"reset_token":token}})
+
+    return {"message":f"Update the token"}

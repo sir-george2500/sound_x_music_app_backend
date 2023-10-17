@@ -47,6 +47,7 @@ def check_in_db_song(collection, delimiter=0, **kwargs):
   
     if delimiter > 0:
         query = {'title': kwargs.get('title')}
+        
     else:
         or_conditions = [{field: value} for field, value in kwargs.items()]
         query = {'$or': or_conditions}
@@ -128,10 +129,6 @@ async def save_song_metadata(data):
 
     data["song_id"] = "None"
 
-    # Check if a song with the same file name in its metadata already exists
-    if song_collection.find_one({'file_name': data["file_name"]}):
-        return {"Error": "Song with the same title already exists"}
-
     # If not, insert the new song metadata
     song_collection.insert_one(data).inserted_id
 
@@ -176,10 +173,8 @@ async def add_song_id(songm_id,song_id):
     db = client["sound-x"]
     songm_collection = db["songs_metadata"]
 
-    if songm_collection.find_one({"_id": songm_id}):
-        songm_collection.update_one({"_id": songm_id}, {"$set": {"song_id": song_id}})
-        return {"success": 0}
-    else:
-        return {"success": 1, "error": "Song metadata record does not exist."}
+    songm_collection.update_one({"_id": songm_id}, {"$set": {"song_id": song_id}})
+    return {"success": 0}
+   
 
 

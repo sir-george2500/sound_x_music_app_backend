@@ -74,7 +74,7 @@ class ResetTokenRequest(BaseModel):
         json_schema_extra = {
             "examples": [
                {
-                "email": "test@example.com"
+                "email": "gsmulbah2500@gmail.com"
                 }
 
             ]
