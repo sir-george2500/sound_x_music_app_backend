@@ -6,7 +6,7 @@ from dotenv  import load_dotenv
 import os
 import jwt
 from datetime import datetime, timedelta
-import uuid
+import random
 
 
 # Load environment variables from .env
@@ -183,16 +183,26 @@ async def get_user_data(email):
 
 # generate the reset Token for the user request
 async def generate_reset_token():
-    reset_token = str(uuid.uuid4())
-    timestamp = datetime.now().timestamp()
-    return f"{reset_token}-{timestamp}"
+    reset_token = str(random.randint(100000, 999999))
+    return f"{reset_token}"
 
 
 async def update_request_token(email):
     token = await generate_reset_token()
 
+    # Calculate expiry time (1 hour from now)
+    expiry_time = datetime.now() + timedelta(hours=1)
+
     user_collection = db["users"]
 
-    user_collection.update_one({"email":email},{"$set":{"reset_token":token}})
+    user_collection.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "reset_token": token,
+                "token_expiry": expiry_time
+            }
+        }
+    )
 
-    return {"message":f"Update the token"}
+    return {"message": "reset the token"}
