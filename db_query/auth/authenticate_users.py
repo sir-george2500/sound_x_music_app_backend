@@ -204,5 +204,7 @@ async def update_request_token(email):
             }
         }
     )
+    return token
 
-    return {"message": "reset the token"}
+
+
