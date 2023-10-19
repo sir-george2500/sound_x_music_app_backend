@@ -14,11 +14,11 @@ from email.message import EmailMessage
 load_dotenv()
 
 # Global variables for secret key and algorithm
-SECRET_KEY = os.getenv("Secret_Key") 
-
+SECRET_KEY = os.getenv("SECRET_KEY") 
+SECRET_EMAIL = os.getenv("SECRET_EMAIL")
+SECRET_PASSWORD = os.getenv("SECRET_EMAIL_PASSWORD")
 ALGORITHM = "HS256"
-USERNAME = os.getenv("EMAIl_USERNAME")
-PASSWORD = os.getenv("EMAIL_PASSWORD")
+
 
 #db client
 db = client["sound-x"]
@@ -244,8 +244,7 @@ async def send_reset_password_email(useremail, token):
 
     HOST = "smtp-mail.outlook.com"
     PORT = 587
-    USERNAME = "soundX.app@outlook.com"
-    PASSWORD = "Luther@100"
+
 
     msg = EmailMessage()
     msg['Subject'] = "Reset your password on Sound-X"
@@ -256,7 +255,10 @@ async def send_reset_password_email(useremail, token):
 
     smtp = smtplib.SMTP(HOST, PORT)
     smtp.starttls()
-    smtp.login(str(USERNAME), str(PASSWORD))
+    print(SECRET_EMAIL)
+    print(SECRET_PASSWORD)
+    #print(PASSWORD)
+    smtp.login(SECRET_EMAIL, SECRET_PASSWORD)
     smtp.sendmail(msg['From'], msg['To'], msg.as_string())
     smtp.quit()
 
