@@ -7,7 +7,8 @@ import os
 import jwt
 from datetime import datetime, timedelta
 import random
-
+import smtplib
+from email.message import EmailMessage
 
 # Load environment variables from .env
 load_dotenv()
@@ -168,6 +169,14 @@ def sign_user_with_google(user_data):
 
 # Get user data by email from both 'users' and 'third_party_users' collections
 async def get_user_data(email):
+    """Gets the user data for the given email address.
+
+    Args:
+        email: The email address of the user.
+
+    Returns:
+        A dictionary containing the user data, or None if the user is not found.
+    """
 
     users_collection = db["users"]
     user_data = users_collection.find_one({'email': email}, {"_id": 0, "password": 0})  # Exclude _id and password fields
@@ -181,13 +190,28 @@ async def get_user_data(email):
 
     return third_party_user_data
 
-# generate the reset Token for the user request
+
 async def generate_reset_token():
+    """Generates a random reset token.
+
+    Returns:
+        A string containing the reset token.
+    """
+
     reset_token = str(random.randint(100000, 999999))
     return f"{reset_token}"
 
 
 async def update_request_token(email):
+    """Updates the reset token for the given email address.
+
+    Args:
+        email: The email address of the user.
+
+    Returns:
+        The reset token.
+    """
+
     token = await generate_reset_token()
 
     # Calculate expiry time (1 hour from now)
@@ -207,4 +231,31 @@ async def update_request_token(email):
     return token
 
 
+async def send_reset_password_email(useremail, token):
+    """Sends an email to the user with a link to reset their password.
+
+    Args:
+        email: The user's email address.
+        token: The reset token.
+    """
+
+    HOST = "smtp-mail.outlook.com"
+    PORT = 587
+    USERNAME = "soundX.app@outlook.com"
+    PASSWORD = "Luther@100"
+
+    msg = EmailMessage()
+    msg['Subject'] = "Reset your password on Sound-X"
+    msg['From'] = "soundX.app@outlook.com"
+    msg['To'] = useremail
+
+    msg.set_content(f"Hi there,\n\nHere is your reset code to reset your password on Sound-X: {token}\n\nThis code is valid for 1 hour.\n\nThanks,\nThe Sound-X Team")
+
+    smtp = smtplib.SMTP(HOST, PORT)
+    smtp.starttls()
+    smtp.login(USERNAME, PASSWORD)
+    smtp.sendmail(msg['From'], msg['To'], msg.as_string())
+    smtp.quit()
+
+    return {"message": "Email sent"}
 

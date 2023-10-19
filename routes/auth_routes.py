@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from db_query.auth.authenticate_users import (
     create_user, sign_user, sign_user_with_google, get_user_data, 
-    check_in_db, is_valid_user, update_request_token
+    check_in_db, is_valid_user, update_request_token, send_reset_password_email
 )
 from models.user import RegisterUser, LoginUser, LoginGoogleUser, ResetTokenRequest
 
@@ -52,8 +52,14 @@ async def request_reset_token(user: ResetTokenRequest):
 
     if not user_in_db:
         raise HTTPException(status_code=404, detail="User not found")
+
     try:
         result = await update_request_token(email)
-        return {"message": "Token has been reset", "reset_token": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating the token: {e}")
+   
+    try:
+        sent = await send_reset_password_email(email, result)
+        return sent
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"error sending the mail {e}")
