@@ -79,3 +79,12 @@ class ResetTokenRequest(BaseModel):
 
             ]
         }
+
+class VerifyToken(BaseModel):
+    token:str = Field(..., description="token to verify")
+
+
+class ResetPassword(BaseModel):
+    token:str = Field(..., description="token to verify")
+    email:str = Field(..., description="email of the user")
+    password:str = Field(..., description="user new password")

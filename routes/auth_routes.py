@@ -3,7 +3,12 @@ from db_query.auth.authenticate_users import (
     create_user, sign_user, sign_user_with_google, get_user_data, 
     check_in_db, is_valid_user, update_request_token, send_reset_password_email
 )
-from models.user import RegisterUser, LoginUser, LoginGoogleUser, ResetTokenRequest
+
+from db_query.auth.auth_users_two import (
+  validate_token
+)
+
+from models.user import RegisterUser, LoginUser, LoginGoogleUser, ResetTokenRequest, VerifyToken
 
 auth_router = APIRouter()
 
@@ -63,3 +68,38 @@ async def request_reset_token(user: ResetTokenRequest):
         return sent
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"error sending the mail {e}")
+
+
+@auth_router.post("/verify_token")
+async def verify_reset_token(data: VerifyToken):
+ token = data.token
+
+ if not  validate_token(token):
+         raise HTTPException(status_code=401, detail=f"Invalid Token")
+
+ return True
+
+
+@auth_router.post("/change_password")
+async def verify_reset_token(data: VerifyToken):
+ token = data.token
+
+ if not  validate_token(token):
+         raise HTTPException(status_code=401, detail=f"Invalid Token")
+
+ return True
+
+
+
+
+
+
+    
+
+ 
+
+ 
+
+
+
+
