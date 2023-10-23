@@ -74,9 +74,9 @@ async def verify_reset_token(data: VerifyToken):
  email = data.email
  token = data.token
 
- user_in_db = check_in_db('users',delimiter=1, email=email)
+ user_in_db = check_in_db('users',delimiter=1, email=email, reset_token=token)
  if not user_in_db:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Token not found")
  return True
  
 

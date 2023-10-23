@@ -24,7 +24,7 @@ ALGORITHM = "HS256"
 db = client["sound-x"]
 
 # variadic  function for checking in the Database for user
-def check_in_db(collection, delimiter=1, **kwargs):
+def check_in_db(collection, delimiter=2, **kwargs):
     """
     Check if a user exists in the database.
 
