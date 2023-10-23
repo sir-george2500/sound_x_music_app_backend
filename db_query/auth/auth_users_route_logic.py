@@ -6,7 +6,7 @@ from passlib.hash import bcrypt
 from fastapi import APIRouter, HTTPException
 from .authenticate_users import (
     check_in_db, create_user, is_valid_user,
-    sign_user, sign_user_with_google,  )
+    sign_user, sign_user_with_google, get_user_data )
 #db client
 db = client["sound-x"]
 
@@ -43,6 +43,11 @@ def authenticate_user_with_google(user):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
 
+async def fetch_user_data(email):
+    user_data = await get_user_data(email)
+    if user_data is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_data
 
 def verify_token(email, token):
     user_in_db = check_in_db('users', delimiter=1, email=email, reset_token=token)

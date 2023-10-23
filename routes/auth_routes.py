@@ -6,7 +6,8 @@ from db_query.auth.authenticate_users import (
     check_in_db, is_valid_user, update_request_token, send_reset_password_email
 )
 from db_query.auth.auth_users_route_logic import (
-  verify_token, register_new_user, authenticate_user
+  verify_token, register_new_user, authenticate_user,
+  authenticate_user_with_google, fetch_user_data
 )
 
 from models.user import (
@@ -27,18 +28,11 @@ def login_user(user: LoginUser):
 
 @auth_router.post("/login_with_google")
 def login_with_google(user: LoginGoogleUser):
-    try:
-        jwt = sign_user_with_google(user)
-        return {"jwt": jwt}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
+    return authenticate_user_with_google(user)
 
 @auth_router.get("/get_user_data/{email}")
-async def get_user(email: str):
-    user_data = await get_user_data(email)
-    if user_data is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user_data
+async def get_user_data_route(email: str):
+    return await fetch_user_data(email)
 
 @auth_router.post("/request_reset_token")
 async def request_reset_token(user: ResetTokenRequest):
