@@ -6,7 +6,7 @@ from passlib.hash import bcrypt
 from fastapi import APIRouter, HTTPException
 from .authenticate_users import (
     check_in_db, create_user, is_valid_user,
-    sign_user  )
+    sign_user, sign_user_with_google,  )
 #db client
 db = client["sound-x"]
 
@@ -32,6 +32,13 @@ def authenticate_user(user):
         raise HTTPException(status_code=401, detail="Invalid password or Username")
     try:
         jwt = sign_user(user)
+        return {"jwt": jwt}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
+
+def authenticate_user_with_google(user):
+    try:
+        jwt = sign_user_with_google(user)
         return {"jwt": jwt}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
