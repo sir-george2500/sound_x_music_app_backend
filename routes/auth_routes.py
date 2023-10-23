@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException
+from datetime import datetime
+
 from db_query.auth.authenticate_users import (
     create_user, sign_user, sign_user_with_google, get_user_data, 
     check_in_db, is_valid_user, update_request_token, send_reset_password_email
@@ -77,7 +79,13 @@ async def verify_reset_token(data: VerifyToken):
  user_in_db = check_in_db('users',delimiter=1, email=email, reset_token=token)
  if not user_in_db:
         raise HTTPException(status_code=404, detail="Token not found")
- return True
+   # Check if the token expiry time is greater than the current time
+ current_time = datetime.utcnow()
+ token_expiry = user_in_db.get('token_expiry')
+ if token_expiry and token_expiry > current_time:
+        return True
+ else:
+        raise HTTPException(status_code=401, detail="Invalid Token")
  
 
 
