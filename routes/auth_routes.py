@@ -5,7 +5,9 @@ from db_query.auth.authenticate_users import (
     create_user, sign_user, sign_user_with_google, get_user_data, 
     check_in_db, is_valid_user, update_request_token, send_reset_password_email
 )
-
+from db_query.auth.auth_users_route_logic import (
+  verify_token, register_new_user
+)
 
 from models.user import (
     RegisterUser, LoginUser, LoginGoogleUser, 
@@ -15,15 +17,8 @@ auth_router = APIRouter()
 
 @auth_router.post("/register_user")
 def register_user(user: RegisterUser):
-    user_in_db = check_in_db('users', username=user.username, email=user.email)
-    if user_in_db:
-        raise HTTPException(status_code=400, detail="Username or email already exists")
+    return register_new_user(user)
 
-    try:
-        user_id = create_user(user)
-        return {"user_id": user_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error registering user: {str(e)}")
 
 @auth_router.post("/login_user")
 def login_user(user: LoginUser):
@@ -71,22 +66,13 @@ async def request_reset_token(user: ResetTokenRequest):
         raise HTTPException(status_code=500, detail=f"error sending the mail {e}")
 
 
+
+
 @auth_router.post("/verify_token")
 async def verify_reset_token(data: VerifyToken):
- email = data.email
- token = data.token
-
- user_in_db = check_in_db('users',delimiter=1, email=email, reset_token=token)
- if not user_in_db:
-        raise HTTPException(status_code=404, detail="Token not found")
-   # Check if the token expiry time is greater than the current time
- current_time = datetime.utcnow()
- token_expiry = user_in_db.get('token_expiry')
- if token_expiry and token_expiry > current_time:
-        return True
- else:
-        raise HTTPException(status_code=401, detail="Invalid Token")
- 
+    email = data.email
+    token = data.token
+    return verify_token(email, token)
 
 
 # @auth_router.post("/change_password")
