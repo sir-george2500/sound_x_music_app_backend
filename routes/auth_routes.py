@@ -4,11 +4,10 @@ from db_query.auth.authenticate_users import (
     check_in_db, is_valid_user, update_request_token, send_reset_password_email
 )
 
-from db_query.auth.auth_users_two import (
-  validate_token
-)
 
-from models.user import RegisterUser, LoginUser, LoginGoogleUser, ResetTokenRequest, VerifyToken
+from models.user import (
+    RegisterUser, LoginUser, LoginGoogleUser, 
+    ResetTokenRequest, VerifyToken)
 
 auth_router = APIRouter()
 
@@ -72,22 +71,24 @@ async def request_reset_token(user: ResetTokenRequest):
 
 @auth_router.post("/verify_token")
 async def verify_reset_token(data: VerifyToken):
+ email = data.email
  token = data.token
 
- if not  validate_token(token):
-         raise HTTPException(status_code=401, detail=f"Invalid Token")
-
+ user_in_db = check_in_db('users',delimiter=1, email=email)
+ if not user_in_db:
+        raise HTTPException(status_code=404, detail="User not found")
  return True
+ 
 
 
-@auth_router.post("/change_password")
-async def verify_reset_token(data: VerifyToken):
- token = data.token
+# @auth_router.post("/change_password")
+# async def change_password(data:):
+#  token = data.token
 
- if not  validate_token(token):
-         raise HTTPException(status_code=401, detail=f"Invalid Token")
+#  if not  validate_token(token):
+#          raise HTTPException(status_code=401, detail=f"Invalid Token")
 
- return True
+#  return True
 
 
 

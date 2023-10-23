@@ -81,8 +81,19 @@ class ResetTokenRequest(BaseModel):
         }
 
 class VerifyToken(BaseModel):
+    email:str = Field(..., description="email of the user")
     token:str = Field(..., description="token to verify")
+    class Config:
+        json_schema_extra = {
+            "examples": [
+               {
+                "email": "gsmulbah2500@gmail.com",
+                "token": ""
 
+                }
+
+            ]
+        }
 
 class ResetPassword(BaseModel):
     token:str = Field(..., description="token to verify")

@@ -24,7 +24,7 @@ ALGORITHM = "HS256"
 db = client["sound-x"]
 
 # variadic  function for checking in the Database for user
-def check_in_db(collection, delimiter=0, **kwargs):
+def check_in_db(collection, delimiter=1, **kwargs):
     """
     Check if a user exists in the database.
 
@@ -38,14 +38,19 @@ def check_in_db(collection, delimiter=0, **kwargs):
     """
     users_collection = db[collection]
 
-    if delimiter > 0:
-        query = {'email': kwargs.get('email')}
-    else:
+    if delimiter == 1:
+        # Construct a query with multiple conditions (AND)
+        query = {field: value for field, value in kwargs.items()}
+    elif delimiter == 2:
+        # Construct a query with multiple conditions (OR)
         or_conditions = [{field: value} for field, value in kwargs.items()]
         query = {'$or': or_conditions}
+    else:
+        raise ValueError("Invalid delimiter value. Use 1 for AND or 2 for OR.")
 
     user_in_db = users_collection.find_one(query)
     return user_in_db
+
 
 
 
@@ -255,8 +260,7 @@ async def send_reset_password_email(useremail, token):
 
     smtp = smtplib.SMTP(HOST, PORT)
     smtp.starttls()
-    print(SECRET_EMAIL)
-    print(SECRET_PASSWORD)
+    
     #print(PASSWORD)
     smtp.login(SECRET_EMAIL, SECRET_PASSWORD)
     smtp.sendmail(msg['From'], msg['To'], msg.as_string())
