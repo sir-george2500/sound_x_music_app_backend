@@ -6,7 +6,7 @@ from db_query.auth.authenticate_users import (
     check_in_db, is_valid_user, update_request_token, send_reset_password_email
 )
 from db_query.auth.auth_users_route_logic import (
-  verify_token, register_new_user
+  verify_token, register_new_user, authenticate_user
 )
 
 from models.user import (
@@ -22,13 +22,8 @@ def register_user(user: RegisterUser):
 
 @auth_router.post("/login_user")
 def login_user(user: LoginUser):
-    if not is_valid_user(user):
-        raise HTTPException(status_code=401, detail="Invalid password or Username")
-    try:
-        jwt = sign_user(user)
-        return {"jwt": jwt}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
+    return authenticate_user(user)
+
 
 @auth_router.post("/login_with_google")
 def login_with_google(user: LoginGoogleUser):

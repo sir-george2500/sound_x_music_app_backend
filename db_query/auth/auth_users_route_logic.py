@@ -4,22 +4,13 @@ from datetime import datetime, timedelta
 from config.db import client
 from passlib.hash import bcrypt 
 from fastapi import APIRouter, HTTPException
-from .authenticate_users import (check_in_db, create_user )
+from .authenticate_users import (
+    check_in_db, create_user, is_valid_user,
+    sign_user  )
 #db client
 db = client["sound-x"]
 
 
-
-def verify_token(email, token):
-    user_in_db = check_in_db('users', delimiter=1, email=email, reset_token=token)
-    if not user_in_db:
-        raise HTTPException(status_code=404, detail="Token not found")
-    current_time = datetime.utcnow()
-    token_expiry = user_in_db.get('token_expiry')
-    if token_expiry and token_expiry > current_time:
-        return True
-    else:
-        raise HTTPException(status_code=401, detail="Invalid Token")
 
 def register_new_user(user_data):
     username = user_data.username
@@ -36,5 +27,24 @@ def register_new_user(user_data):
         raise HTTPException(status_code=500, detail=f"Error registering user: {str(e)}")
 
 
+def authenticate_user(user):
+    if not is_valid_user(user):
+        raise HTTPException(status_code=401, detail="Invalid password or Username")
+    try:
+        jwt = sign_user(user)
+        return {"jwt": jwt}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error login user: {str(e)}")
 
+
+def verify_token(email, token):
+    user_in_db = check_in_db('users', delimiter=1, email=email, reset_token=token)
+    if not user_in_db:
+        raise HTTPException(status_code=404, detail="Token not found")
+    current_time = datetime.utcnow()
+    token_expiry = user_in_db.get('token_expiry')
+    if token_expiry and token_expiry > current_time:
+        return True
+    else:
+        raise HTTPException(status_code=401, detail="Invalid Token")
 
