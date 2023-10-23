@@ -103,12 +103,12 @@ async def fetch_user_data(email):
     return user_data
 
 
-async def process_reset_token_request(email):
+async def process_reset_token_request(user):
     """
     Process request for resetting the token.
 
     Args:
-        email (str): User's email.
+        email (str): User data which contain email.
 
     Returns:
         str: Result of the reset process.
@@ -118,6 +118,7 @@ async def process_reset_token_request(email):
         or 
         sending the mail.
     """
+    email = user.email
     user_in_db = check_in_db('users', email=email)
 
     if not user_in_db:
@@ -158,4 +159,39 @@ def verify_token(email, token):
         return True
     else:
         raise HTTPException(status_code=401, detail="Invalid Token")
+
+def validate_reset_token(data):
+    email = data.email
+    token = data.token
+    return verify_token(email, token)
+
+def reset_password(data):
+    email = data.email
+    token = data.token
+    password = data.password
+
+    # Step 1: Validate the reset token
+    if not validate_reset_token(data):
+        raise HTTPException(status_code=401, detail="Invalid reset token")
+
+    try:
+        # Step 2: Update the password in the database
+        hashed_password = bcrypt.hash(password)
+        collection = db['users']
+        collection.update_one(
+            {"email": email},
+            {"$set": {"password": hashed_password}}
+        )
+
+        # Step 3: Set token expiry to a time in the past to invalidate the old token
+        collection.update_one(
+            {"email": email},
+            {"$set": {"token_expiry": datetime.utcnow() - timedelta(days=1)}}
+        )
+
+        return {"message": "Password changed successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating password: {str(e)}")
+
+
 
