@@ -1,13 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from datetime import datetime
 
-from db_query.auth.authenticate_users import (
-    create_user, sign_user, sign_user_with_google, get_user_data, 
-    check_in_db, is_valid_user, update_request_token, send_reset_password_email
-)
 from db_query.auth.auth_users_route_logic import (
   verify_token, register_new_user, authenticate_user,
-  authenticate_user_with_google, fetch_user_data
+  authenticate_user_with_google, fetch_user_data, process_reset_token_request
 )
 
 from models.user import (
@@ -30,31 +26,16 @@ def login_user(user: LoginUser):
 def login_with_google(user: LoginGoogleUser):
     return authenticate_user_with_google(user)
 
+
 @auth_router.get("/get_user_data/{email}")
 async def get_user_data_route(email: str):
     return await fetch_user_data(email)
 
+
 @auth_router.post("/request_reset_token")
 async def request_reset_token(user: ResetTokenRequest):
     email = user.email
-    
-    user_in_db = check_in_db('users', email=email)
-
-    if not user_in_db:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    try:
-        result = await update_request_token(email)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating the token: {e}")
-   
-    try:
-        sent = await send_reset_password_email(email, result)
-        return sent
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"error sending the mail {e}")
-
-
+    return await process_reset_token_request(email)
 
 
 @auth_router.post("/verify_token")
